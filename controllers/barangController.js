@@ -134,3 +134,74 @@ export const getGroups = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// Ambil barang berdasarkan barcode
+export const getBarangByBarcode = async (req, res) => {
+  const { barcode } = req.params;
+  try {
+    // Menggunakan template literals
+    const result = await pool.query(
+      `SELECT * FROM barang WHERE barcode = '${barcode}'`,
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Barang tidak ditemukan" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// createTransaksi
+export const createTransaksi = async (req, res) => {
+  const { barang_id, tipe_transaksi, jumlah, keterangan } = req.body;
+
+  // Ambil user_id dari req.user (ini disuntikkan oleh middleware auth)
+  const user_id = req.user.id;
+
+  try {
+    // 1. Cek stok dulu jika tipe transaksinya KELUAR
+    if (tipe_transaksi === "KELUAR") {
+      const cekStok = await pool.query(
+        `SELECT stok FROM barang WHERE id = ${barang_id}`,
+      );
+
+      if (cekStok.rows[0].stok < jumlah) {
+        return res.status(400).json({ message: "Stok tidak cukup!" });
+      }
+    }
+
+    // 2. Simpan transaksi (stok akan update otomatis via trigger di database)
+    const newTransaksi = await pool.query(
+      `INSERT INTO transaksi_barang (barang_id, user_id, tipe_transaksi, jumlah, keterangan) 
+       VALUES (${barang_id}, ${user_id}, '${tipe_transaksi}', ${jumlah}, '${keterangan}') 
+       RETURNING *`,
+    );
+
+    res.status(201).json({
+      message: "Transaksi berhasil!",
+      data: newTransaksi.rows[0],
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Ambil transaksi terbaru
+export const getRecentTransaksi = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT t.*, b.nama_barang, b.merk, b.serial_number, u.username as nama_user
+      FROM transaksi_barang t
+      JOIN barang b ON t.barang_id = b.id
+      JOIN users u ON t.user_id = u.id
+      ORDER BY t.created_at DESC
+      LIMIT 10
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
