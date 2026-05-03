@@ -1,10 +1,24 @@
 import express from "express";
-const router = express.Router();
 import * as dashCtrl from "../controllers/dashboardController.js";
-import authenticateToken from "../middleware/auth.js";
+import { authenticateToken, authorizeRole } from "../middleware/auth.js";
+import { ROLES } from "../config/constants.js"; // JANGAN LUPA IMPORT INI
+// import authenticateToken from "../middleware/auth.js";
 
-router.get("/stats", authenticateToken, dashCtrl.getStats);
-router.get("/charts", authenticateToken, dashCtrl.getCharts);
+const router = express.Router();
+
+router.get(
+  "/stats",
+  authenticateToken,
+  authorizeRole([ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF]),
+  dashCtrl.getStats,
+);
+router.get(
+  "/charts",
+  authenticateToken,
+  authorizeRole([ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF]),
+  dashCtrl.getCharts,
+);
+// router.get("/dashboard/charts", authenticateToken, dashCtrl.getChartData);
 
 // INI YANG HILANG:
 export default router;

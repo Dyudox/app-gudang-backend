@@ -37,15 +37,24 @@ export const login = async (req, res) => {
     if (!validPass) return res.status(401).json({ error: "Password salah" });
 
     const token = jwt.sign(
-      { id: user.id, username: user.username, role: user.user_group_id },
+      {
+        id: user.id,
+        username: user.username,
+        full_name: user.full_name,
+        user_group_id: user.user_group_id,
+      },
       process.env.jwt_secret,
-      { expiresIn: "24h" },
+      { expiresIn: "10h" },
     );
 
     res.json({
       message: "Login berhasil",
       token,
-      user: { username: user.username, name: user.full_name },
+      user: {
+        username: user.username,
+        name: user.full_name,
+        user_group_id: user.user_group_id,
+      },
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

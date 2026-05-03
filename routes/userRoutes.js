@@ -7,16 +7,42 @@ import {
   updateUser,
   deleteUser,
 } from "../controllers/userController.js";
-import auth from "../middleware/auth.js";
+import { authenticateToken, authorizeRole } from "../middleware/auth.js";
+import { ROLES } from "../config/constants.js";
 
 const router = express.Router();
 
 // Gunakan langsung nama fungsinya
-router.get("/", auth, getUsers);
-router.get("/:id", auth, getUserById);
-router.post("/", auth, register);
-router.put("/:id", auth, updateUser);
-router.delete("/:id", auth, deleteUser);
+router.get(
+  "/",
+  authenticateToken,
+  authorizeRole([ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF]),
+  getUsers,
+);
+router.get(
+  "/:id",
+  authenticateToken,
+  authorizeRole([ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF]),
+  getUserById,
+);
+router.post(
+  "/",
+  authenticateToken,
+  authorizeRole([ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF]),
+  register,
+);
+router.put(
+  "/:id",
+  authenticateToken,
+  authorizeRole([ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF]),
+  updateUser,
+);
+router.delete(
+  "/:id",
+  authenticateToken,
+  authorizeRole([ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF]),
+  deleteUser,
+);
 
 export default router;
 
