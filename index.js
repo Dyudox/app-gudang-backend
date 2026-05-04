@@ -17,6 +17,7 @@ import returRoutes from "./routes/returRoutes.js";
 import laporanRoutes from "./routes/laporanRoutes.js";
 import mutasiRoutes from "./routes/mutasiRoutes.js";
 import lokasiRoutes from "./routes/lokasiRoutes.js";
+import transaksiRoutes from "./routes/transaksiRoutes.js";
 
 const app = express();
 app.use(
@@ -43,6 +44,7 @@ app.use("/api/lokasi", lokasiRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/user-groups", groupUserRoutes);
+app.use("/api/transaksi", transaksiRoutes);
 
 const port = process.env.port || 5000;
 app.listen(port, () =>

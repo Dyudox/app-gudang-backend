@@ -27,28 +27,28 @@ router.get(
 );
 
 // Ini akan menjadi GET http://localhost:5000/api/barang/barcode/123
-router.get(
-  "/barcode/:barcode",
-  authenticateToken,
-  authorizeRole(allowedRoles),
-  barangCtrl.getBarangByBarcode,
-);
+// router.get(
+//   "/barcode/:barcode",
+//   authenticateToken,
+//   authorizeRole(allowedRoles),
+//   barangCtrl.getBarangByBarcode,
+// );
 
-// Ini akan menjadi POST http://localhost:5000/api/barang/transaksi
-router.post(
-  "/transaksi",
-  authenticateToken,
-  authorizeRole(allowedRoles),
-  barangCtrl.createTransaksi,
-);
+// // Ini akan menjadi POST http://localhost:5000/api/barang/transaksi
+// router.post(
+//   "/transaksi",
+//   authenticateToken,
+//   authorizeRole(allowedRoles),
+//   barangCtrl.createTransaksi,
+// );
 
-// Ini akan menjadi GET http://localhost:5000/api/barang/transaksi
-router.get(
-  "/transaksi/recent",
-  authenticateToken,
-  authorizeRole(allowedRoles),
-  barangCtrl.getRecentTransaksi,
-);
+// // Ini akan menjadi GET http://localhost:5000/api/barang/transaksi
+// router.get(
+//   "/transaksi/recent",
+//   authenticateToken,
+//   authorizeRole(allowedRoles),
+//   barangCtrl.getRecentTransaksi,
+// );
 
 // Ini akan menjadi GET http://localhost:5000/api/barang
 router.get(
@@ -72,6 +72,14 @@ router.post(
   authenticateToken,
   authorizeRole(allowedRoles),
   barangCtrl.addBarang,
+);
+
+// Ini akan menjadi POST http://localhost:5000/api/barang/tambah-lokasi
+router.post(
+  "/tambah-lokasi",
+  authenticateToken,
+  authorizeRole(allowedRoles),
+  barangCtrl.tambahLokasi,
 );
 
 // Ini akan menjadi PUT http://localhost:5000/api/barang/:id

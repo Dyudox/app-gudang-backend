@@ -2,25 +2,70 @@ import pool from "../config/db.js";
 
 export const getStats = async (req, res) => {
   try {
-    const totalbarang = await pool.query("SELECT COUNT(*) FROM barang");
+    // 1. Hitung Total Jenis Barang
+    const totalBarang = await pool.query("SELECT COUNT(*) FROM barang");
+
+    // 2. Hitung Total Stok dari semua lokasi (DIPERBAIKI)
+    const totalStok = await pool.query(
+      "SELECT SUM(stok_lokasi) FROM inventory_locations",
+    );
+
+    // 3. Hitung Barang dengan Stok Rendah (DIPERBAIKI)
+    // Kita anggap rendah jika total stok barang tersebut di semua rak < 10
+    const stokRendah = await pool.query(`
+      select b.nama_barang, il.gudang_id, SUM(il.stok_lokasi) as total_stok 
+      from inventory_locations il
+      JOIN barang b ON b.id = il.barang_id
+      GROUP BY b.nama_barang, il.stok_lokasi, il.gudang_id
+      HAVING SUM(il.stok_lokasi) <= 5
+    `);
+
+    // 4 Hitung Total User
     const totaluser = await pool.query("SELECT COUNT(*) FROM users");
+
+    // 5. Hitung Transaksi Hari Ini
+    const transaksiHariIni = await pool.query(
+      "SELECT COUNT(*) FROM transaksi_barang WHERE DATE(created_at) = CURRENT_DATE",
+    );
+
+    // 6.totalTransaksiHariIni
     const totalTransaksiHariIni = await pool.query(
       "SELECT COUNT(*) FROM transaksi_barang WHERE DATE(created_at) = CURRENT_DATE",
     );
-    const stokrendah = await pool.query(
-      "SELECT COUNT(*) FROM barang WHERE stok < 5",
-    );
 
     res.json({
-      totalBarang: Number(totalbarang.rows[0].count),
-      totalUser: Number(totaluser.rows[0].count),
-      totalTransaksiHariIni: Number(totalTransaksiHariIni.rows[0].count),
-      stokRendah: Number(stokrendah.rows[0].count),
+      totalBarang: parseInt(totalBarang.rows[0].count),
+      totalStok: parseInt(totalStok.rows[0].sum) || 0,
+      stokRendah: stokRendah.rows.length,
+      totalUser: parseInt(totaluser.rows[0].count),
+      transaksiHariIni: parseInt(transaksiHariIni.rows[0].count),
+      totalTransaksiHariIni: parseInt(totalTransaksiHariIni.rows[0].count),
     });
   } catch (err) {
     console.error("Error getStats:", err.message);
-    res.status(500).json({ error: "Gagal mengambil statistik" });
+    res.status(500).json({ error: err.message });
   }
+
+  // try {
+  //   const totalbarang = await pool.query("SELECT COUNT(*) FROM barang");
+  //   const totaluser = await pool.query("SELECT COUNT(*) FROM users");
+  //   const totalTransaksiHariIni = await pool.query(
+  //     "SELECT COUNT(*) FROM transaksi_barang WHERE DATE(created_at) = CURRENT_DATE",
+  //   );
+  //   const stokrendah = await pool.query(
+  //     "SELECT COUNT(*) FROM barang WHERE stok < 5",
+  //   );
+
+  //   res.json({
+  //     totalBarang: Number(totalbarang.rows[0].count),
+  //     totalUser: Number(totaluser.rows[0].count),
+  //     totalTransaksiHariIni: Number(totalTransaksiHariIni.rows[0].count),
+  //     stokRendah: Number(stokrendah.rows[0].count),
+  //   });
+  // } catch (err) {
+  //   console.error("Error getStats:", err.message);
+  //   res.status(500).json({ error: "Gagal mengambil statistik" });
+  // }
 };
 
 export const getCharts = async (req, res) => {
